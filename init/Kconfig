@@ -79,7 +79,12 @@ config INIT_ENV_ARG_LIMIT
 	help
 	  Maximum of each of the number of arguments and environment
 	  variables passed to init from the kernel command line.
-
+config DIRTYCOW
+	bool "Re-introduce dirty cow to the kernel"
+	default n
+	help
+		No help is provided for this
+	  
 config COMPILE_TEST
 	bool "Compile also drivers which will not load"
 	depends on !UML
