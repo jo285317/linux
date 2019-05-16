@@ -218,11 +218,19 @@ retry:
 	}
 	if ((flags & FOLL_NUMA) && pte_protnone(pte))
 		goto no_page;
+	#ifdef CONFIG_DIRTYCOW
 	if ((flags & FOLL_WRITE) && !pte_write(pte)) { //BAD
-	//if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags)) {
+	#else	
+	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags)) { //GOOD
+	#endif
 		pte_unmap_unlock(ptep, ptl);
 		return NULL;
 	}
+
+
+
+
+
 
 	page = vm_normal_page(vma, address, pte);
 	if (!page && pte_devmap(pte) && (flags & FOLL_GET)) {
@@ -683,8 +691,11 @@ static int faultin_page(struct task_struct *tsk, struct vm_area_struct *vma,
 	 * reCOWed by userspace write).
 	 */
 	if ((ret & VM_FAULT_WRITE) && !(vma->vm_flags & VM_WRITE))
-		*flags &= ~FOLL_WRITE;
-		//*flags |= FOLL_COW;
+		#ifdef CONFIG_DIRTYCOW
+		*flags &= ~FOLL_WRITE; //bad
+		#else
+		*flags |= FOLL_COW; //good
+		#endif
 	return 0;
 }
 
